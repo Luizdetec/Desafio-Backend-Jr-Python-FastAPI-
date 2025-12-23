@@ -64,21 +64,3 @@ async def list_games(
     return success_response(data=results)
 
 
-@router.get("/consoles/{console_id}/games")
-async def list_games_by_console(
-        console_id: str,
-        current_user: dict = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db)
-):
-    game_repo = SQLAlchemyGameRepository(db)
-    games = await game_repo.list_by_console(console_id)
-
-    results = [
-        {
-            "id": str(g.id),
-            "name": g.name,
-            "console_name": g.console.name,
-            "console_id": str(g.console_id)
-        } for g in games
-    ]
-    return success_response(data=results)

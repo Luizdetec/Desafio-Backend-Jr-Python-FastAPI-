@@ -39,7 +39,6 @@ async def login(
     user_repo = SQLAlchemyUserRepository(db)
     auth_service = AuthService(user_repo)
 
-    # O AuthService valida as credenciais e gera o token com expiração de 1 hora [cite: 89]
     token = await auth_service.authenticate(form_data.username, form_data.password)
 
     if not token:
@@ -48,7 +47,7 @@ async def login(
             detail=error_response("Invalid username or password", "UNAUTHORIZED")
         )
 
-    return success_response(data={
+    return {
         "access_token": token,
         "token_type": "bearer"
-    })
+    }

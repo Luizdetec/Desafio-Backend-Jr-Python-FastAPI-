@@ -1,3 +1,5 @@
+import uuid
+from typing import List, Optional, Any, Coroutine, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.domain.repositories.console_repository import ConsoleRepository
@@ -23,3 +25,16 @@ class SQLAlchemyConsoleRepository(ConsoleRepository):
             select(ConsoleModel).where(ConsoleModel.name == name)
         )
         return result.scalars().first()
+
+    async def find_by_id(self, console_id: uuid.UUID) -> Optional[Console]:
+        result = await self.session.execute(
+            select(ConsoleModel).where(ConsoleModel.id == console_id)
+        )
+        console_model = result.scalars().first()
+        if console_model:
+            return Console(id=console_model.id, name=console_model.name, company=console_model.company)
+        return None
+
+    async def list_all(self) -> Sequence[ConsoleModel]:
+        result = await self.session.execute(select(ConsoleModel))
+        return result.scalars().all()

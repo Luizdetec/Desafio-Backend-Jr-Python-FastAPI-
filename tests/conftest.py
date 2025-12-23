@@ -2,7 +2,8 @@ import pytest
 import asyncio
 from httpx import AsyncClient
 from app.main import app
-from app.infrastructure.database.session import engine, Base
+from app.infrastructure.database.session import engine
+from app.infrastructure.database.models import Base
 
 @pytest.fixture(scope="session")
 def event_loop():
