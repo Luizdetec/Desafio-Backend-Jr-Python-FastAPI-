@@ -21,7 +21,15 @@ async def create_game(
     game_repo = SQLAlchemyGameRepository(db)
     console_repo = SQLAlchemyConsoleRepository(db)
 
-    console = await console_repo.find_by_id(game_in.console_id)
+    try:
+        console_uuid = game_in.console_id if isinstance(game_in.console_id, uuid.UUID) else uuid.UUID(str(game_in.console_id))
+    except (ValueError, AttributeError):
+        return error_response(
+            message="Invalid console ID format",
+            code="BAD_REQUEST"
+        )
+
+    console = await console_repo.find_by_id(console_uuid)
     if not console:
         return error_response(
             message="The specified console does not exist",
@@ -31,7 +39,7 @@ async def create_game(
     new_game = Game(
         id=uuid.uuid4(),
         name=game_in.name,
-        console_id=game_in.console_id,
+        console_id=console_uuid,
         console_name=console.name
     )
 
@@ -62,5 +70,3 @@ async def list_games(
         } for g in games
     ]
     return success_response(data=results)
-
-

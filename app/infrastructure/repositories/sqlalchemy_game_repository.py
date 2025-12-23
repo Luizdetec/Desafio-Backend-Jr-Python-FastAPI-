@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from app.infrastructure.database.models import GameModel, ConsoleModel
 from app.domain.entities.game import Game
 from typing import List, Any, Coroutine, Sequence
+import uuid
 
 
 class SQLAlchemyGameRepository:
@@ -24,9 +25,14 @@ class SQLAlchemyGameRepository:
         return result.scalars().all()
 
     async def list_by_console(self, console_id: str) -> Sequence[GameModel]:
+        try:
+            console_uuid = uuid.UUID(console_id) if isinstance(console_id, str) else console_id
+        except (ValueError, AttributeError):
+            return []
+
         result = await self.session.execute(
             select(GameModel)
-            .where(GameModel.console_id == console_id)
+            .where(GameModel.console_id == console_uuid)
             .options(joinedload(GameModel.console))
         )
         return result.scalars().all()

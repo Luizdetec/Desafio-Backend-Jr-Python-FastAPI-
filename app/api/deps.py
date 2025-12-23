@@ -7,32 +7,44 @@ from app.api.response_handler import error_response
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+class CustomHTTPException(HTTPException):
+    """Exception customizada que retorna nosso formato de erro"""
+    def __init__(self, status_code: int, message: str, code: str):
+        self.status_code = status_code
+        self.message = message
+        self.code = code
+        super().__init__(status_code=status_code)
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        print(f"DEBUG: Using SECRET_KEY: {SECRET_KEY}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
 
         if username is None or role is None:
-            raise HTTPException(
+            raise CustomHTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=error_response("Could not validate credentials", "UNAUTHORIZED")
+                message="Could not validate credentials",
+                code="UNAUTHORIZED"
             )
         return {"username": username, "role": role}
-    except JWTError:
-        raise HTTPException(
+    except JWTError as e:
+        print(f"JWT Error: {str(e)}")
+        raise CustomHTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=error_response("Invalid or expired token", "UNAUTHORIZED")
+            message="Invalid or expired token",
+            code="UNAUTHORIZED"
         )
 
 
 def RoleChecker(allowed_roles: list):
-    def _role_checker(user: dict = Depends(get_current_user)):
+    async def _role_checker(user: dict = Depends(get_current_user)):
         if user["role"] not in allowed_roles:
-            raise HTTPException(
+            raise CustomHTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=error_response("Only admin can perform this action", "FORBIDDEN")
+                message="Only admin can perform this action",
+                code="FORBIDDEN"
             )
         return user
 

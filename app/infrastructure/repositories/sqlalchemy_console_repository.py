@@ -6,6 +6,7 @@ from app.domain.repositories.console_repository import ConsoleRepository
 from app.infrastructure.database.models import ConsoleModel
 from app.domain.entities.console import Console
 
+
 class SQLAlchemyConsoleRepository(ConsoleRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -27,12 +28,22 @@ class SQLAlchemyConsoleRepository(ConsoleRepository):
         return result.scalars().first()
 
     async def find_by_id(self, console_id: uuid.UUID) -> Optional[Console]:
+        if isinstance(console_id, str):
+            try:
+                console_id = uuid.UUID(console_id)
+            except ValueError:
+                return None
+
         result = await self.session.execute(
             select(ConsoleModel).where(ConsoleModel.id == console_id)
         )
         console_model = result.scalars().first()
         if console_model:
-            return Console(id=console_model.id, name=console_model.name, company=console_model.company)
+            return Console(
+                id=console_model.id,
+                name=console_model.name,
+                company=console_model.company
+            )
         return None
 
     async def list_all(self) -> Sequence[ConsoleModel]:

@@ -59,12 +59,21 @@ async def list_consoles(
     ]
     return success_response(data=results)
 
-@router.get("/consoles/{console_id}/games")
+
+@router.get("/{console_id}/games")
 async def list_games_by_console(
         console_id: str,
         current_user: dict = Depends(get_current_user),
         db: AsyncSession = Depends(get_db)
 ):
+    try:
+        uuid.UUID(console_id)
+    except ValueError:
+        return error_response(
+            message="Invalid console ID format",
+            code="BAD_REQUEST"
+        )
+
     game_repo = SQLAlchemyGameRepository(db)
     games = await game_repo.list_by_console(console_id)
 

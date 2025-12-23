@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from app.api.v1.api import api_router
 from app.api.response_handler import error_response
+from app.api.deps import CustomHTTPException
 
 app = FastAPI(
     title="Game Collection API",
@@ -12,6 +13,15 @@ app = FastAPI(
     docs_url="/docs"
 )
 
+
+@app.exception_handler(CustomHTTPException)
+async def custom_http_exception_handler(request: Request, exc: CustomHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_response(message=exc.message, code=exc.code)
+    )
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
@@ -19,7 +29,9 @@ async def global_exception_handler(request: Request, exc: Exception):
         content=error_response(message=str(exc), code="BAD_REQUEST")
     )
 
+
 app.include_router(api_router)
+
 
 @app.get("/")
 async def root():
