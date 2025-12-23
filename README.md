@@ -1,2 +1,11 @@
-# Desafio-Backend-Jr-Python-FastAPI-
-API para cadastro e organização de uma coleção de jogos de videogame, aplicando conceitos básicos de backend como autenticação, controle de acesso por perfil, organização de código e boas práticas de API.
+# Game Collection API
+
+## Como Rodar Localmente 
+1. Configure o banco Postgres.
+2. Crie um arquivo `.env` baseado no `.env.example`.
+3. Instale as dependências: `pip install -r requirements.txt`.
+4. Rode o app: `uvicorn app.main:app --reload`.
+
+## Como Executar os Testes
+Execute o comando na raiz do projeto:
+`python -m pytest`
